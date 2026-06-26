@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль — PupChat</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐾 Мой профиль</h1>
+            <button id="backToRoomBtn" class="btn-small">← В комнату</button>
+        </header>
+        
+        <div class="profile-content">
+            <div class="profile-card">
+                <div class="avatar">🐾</div>
+                <h2 id="profileName">Пупс</h2>
+                <p id="profileEmail">email@example.com</p>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-value" id="statCoins">0</span>
+                        <span class="stat-label">💰 Монет</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="statLevel">1</span>
+                        <span class="stat-label">⭐ Уровень</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="btn btn-primary">🛍 Магазин</button>
+                <button class="btn btn-secondary">👕 Инвентарь</button>
+                <button class="btn btn-secondary">🏆 Достижения</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="scripts/firebase-config.js"></script>
+    <script type="module" src="scripts/profile.js"></script>
+</body>
+</html>
