@@ -6,21 +6,18 @@ const ctx = canvas.getContext('2d');
 
 let currentUser = null;
 let users = {};
+let FLOOR_Y = 0;
 
-// Настройки комнаты (вид сбоку)
-let FLOOR_Y = 500;
-const PUP_RADIUS = 30;
-
-// Адаптация canvas под размер окна
+// Адаптация canvas
 function resizeCanvas() {
     const container = canvas.parentElement;
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
-    FLOOR_Y = canvas.height - 100;
+    FLOOR_Y = canvas.height * 0.6; // Пол на 60% высоты
     drawRoom();
 }
 
-// Инициализация комнаты
+// Инициализация
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
         window.location.href = 'login.html';
@@ -29,7 +26,6 @@ auth.onAuthStateChanged(async (user) => {
     
     currentUser = user;
     
-    // Загрузка данных пользователя
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     if (userDoc.exists()) {
         const userData = userDoc.data();
@@ -37,34 +33,28 @@ auth.onAuthStateChanged(async (user) => {
         document.getElementById('userCoins').textContent = '💰 ' + (userData.coins || 0);
     }
     
-    // Добавление в комнату
     await addUserToRoom(user.uid);
-    
-    // Слушатель изменений комнаты
     listenToRoom();
     
-    // Адаптация при изменении размера окна
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 });
 
-// Добавление пользователя в комнату
 async function addUserToRoom(uid) {
     const userRef = doc(db, 'rooms', 'room1', 'users', uid);
     try {
         await updateDoc(userRef, {
-            x: 400,
+            x: canvas.width / 2 || 400,
             lastUpdate: Date.now()
         });
     } catch {
         await setDoc(userRef, {
-            x: 400,
+            x: canvas.width / 2 || 400,
             lastUpdate: Date.now()
         });
     }
 }
 
-// Слушатель изменений комнаты
 function listenToRoom() {
     onSnapshot(collection(db, 'rooms', 'room1', 'users'), (snapshot) => {
         users = {};
@@ -75,48 +65,42 @@ function listenToRoom() {
     });
 }
 
-// Отрисовка комнаты (вид сбоку)
 function drawRoom() {
-    // Светлое небо (градиент)
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#87CEEB');  // Голубое небо
-    gradient.addColorStop(1, '#E0F6FF');  // Светло-голубой
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Небо
+    const skyGradient = ctx.createLinearGradient(0, 0, 0, FLOOR_Y);
+    skyGradient.addColorStop(0, '#87CEEB');
+    skyGradient.addColorStop(1, '#E0F6FF');
+    ctx.fillStyle = skyGradient;
+    ctx.fillRect(0, 0, canvas.width, FLOOR_Y);
     
-    // Облака
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    drawCloud(100, 80, 40);
-    drawCloud(300, 120, 50);
-    drawCloud(600, 60, 35);
-    drawCloud(900, 100, 45);
+    // Трава
+    const grassGradient = ctx.createLinearGradient(0, FLOOR_Y, 0, canvas.height);
+    grassGradient.addColorStop(0, '#90EE90');
+    grassGradient.addColorStop(1, '#228B22');
+    ctx.fillStyle = grassGradient;
+    ctx.fillRect(0, FLOOR_Y, canvas.width, canvas.height - FLOOR_Y);
     
     // Солнце
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
-    ctx.arc(canvas.width - 80, 80, 40, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#FFA500';
-    ctx.beginPath();
-    ctx.arc(canvas.width - 80, 80, 30, 0, Math.PI * 2);
+    ctx.arc(canvas.width - 100, 80, 50, 0, Math.PI * 2);
     ctx.fill();
     
-    // Пол (трава)
-    ctx.fillStyle = '#90EE90';
-    ctx.fillRect(0, FLOOR_Y, canvas.width, canvas.height - FLOOR_Y);
+    // Облака
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    drawCloud(150, 100, 40);
+    drawCloud(400, 150, 50);
+    drawCloud(700, 80, 35);
     
-    // Полоска земли
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(0, FLOOR_Y + 20, canvas.width, canvas.height - FLOOR_Y - 20);
-    
-    // Рисуем всех пользователей
+    // Пупсы
     for (const uid in users) {
         const user = users[uid];
-        drawPup(user.x, FLOOR_Y - PUP_RADIUS, uid === currentUser?.uid);
+        if (user.x !== undefined) {
+            drawPup(user.x, FLOOR_Y - 40, uid === currentUser?.uid);
+        }
     }
 }
 
-// Рисуем облако
 function drawCloud(x, y, size) {
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -125,18 +109,17 @@ function drawCloud(x, y, size) {
     ctx.fill();
 }
 
-// Отрисовка пупса (вид сбоку)
 function drawPup(x, y, isMe) {
-    // Тень под пупсом
+    // Тень
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.beginPath();
     ctx.ellipse(x, FLOOR_Y + 5, 25, 8, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Тело (круг)
+    // Тело
     ctx.fillStyle = isMe ? '#FF1493' : '#4169E1';
     ctx.beginPath();
-    ctx.arc(x, y, PUP_RADIUS, 0, Math.PI * 2);
+    ctx.arc(x, y, 35, 0, Math.PI * 2);
     ctx.fill();
     
     // Обводка
@@ -144,19 +127,19 @@ function drawPup(x, y, isMe) {
     ctx.lineWidth = 4;
     ctx.stroke();
     
-    // Эмоция (смайлик)
-    ctx.font = '28px Arial';
+    // Смайлик
+    ctx.font = '32px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('😊', x, y);
     
-    // Имя над головой
+    // Имя
     ctx.font = 'bold 16px Arial';
     ctx.fillStyle = '#333';
-    ctx.fillText(isMe ? 'Ты' : 'Пупс', x, y - PUP_RADIUS - 20);
+    ctx.fillText(isMe ? 'Ты' : 'Пупс', x, y - 50);
 }
 
-// Клик по комнате — движение только влево-вправо
+// Движение
 canvas.addEventListener('click', async (e) => {
     if (!currentUser) return;
     
@@ -164,9 +147,8 @@ canvas.addEventListener('click', async (e) => {
     const scaleX = canvas.width / rect.width;
     const x = (e.clientX - rect.left) * scaleX;
     
-    // Ограничиваем движение в пределах комнаты
-    const minX = PUP_RADIUS + 10;
-    const maxX = canvas.width - PUP_RADIUS - 10;
+    const minX = 45;
+    const maxX = canvas.width - 45;
     const clampedX = Math.max(minX, Math.min(maxX, x));
     
     const userRef = doc(db, 'rooms', 'room1', 'users', currentUser.uid);
@@ -176,26 +158,17 @@ canvas.addEventListener('click', async (e) => {
     });
 });
 
-// Кнопка профиля
-const profileBtn = document.getElementById('profileBtn');
-if (profileBtn) {
-    profileBtn.addEventListener('click', () => {
-        window.location.href = 'profile.html';
-    });
-}
+// Кнопки
+document.getElementById('profileBtn')?.addEventListener('click', () => {
+    window.location.href = 'profile.html';
+});
 
-// Кнопка выхода
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        try {
-            await auth.signOut();
-            window.location.href = 'index.html';
-        } catch (error) {
-            console.error('Ошибка выхода:', error);
-            window.location.href = 'index.html';
-        }
-    });
-}
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    try {
+        await auth.signOut();
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Ошибка выхода:', error);
+        window.location.href = 'index.html';
+    }
+});
