@@ -5,20 +5,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход — PupChat</title>
     <link rel="stylesheet" href="styles/main.css">
+    <style>
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🐾 PupChat</h1>
-        </header>
-        
-        <form id="loginForm" class="auth-form">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Пароль" required>
-            <button type="submit" class="btn btn-primary">Войти</button>
-        </form>
-        
-        <p class="link">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+    <div class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🐾 PupChat</h1>
+                <p>Войди в свой аккаунт</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">📧 Email</label>
+                    <input type="email" id="email" placeholder="example@gmail.com" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">🔒 Пароль</label>
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="btn-login" id="loginBtn">🚀 Войти</button>
+            </form>
+            
+            <div class="register-link">
+                Нет аккаунта? <a href="register.html">📝 Зарегистрироваться</a>
+            </div>
+        </div>
     </div>
     
     <script type="module" src="scripts/firebase-config.js"></script>
