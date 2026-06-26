@@ -7,6 +7,10 @@ const ctx = canvas.getContext('2d');
 let currentUser = null;
 let users = {};
 
+// Настройки комнаты (вид сбоку)
+const FLOOR_Y = 500;  // Уровень пола (от верхнего края)
+const PUP_RADIUS = 30;
+
 // Инициализация комнаты
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -37,15 +41,11 @@ async function addUserToRoom(uid) {
     try {
         await updateDoc(userRef, {
             x: 400,
-            y: 300,
-            emotion: '😊',
             lastUpdate: Date.now()
         });
     } catch {
         await setDoc(userRef, {
             x: 400,
-            y: 300,
-            emotion: '😊',
             lastUpdate: Date.now()
         });
     }
@@ -62,56 +62,77 @@ function listenToRoom() {
     });
 }
 
-// Отрисовка комнаты
+// Отрисовка комнаты (вид сбоку)
 function drawRoom() {
-    // Фон
-    ctx.fillStyle = '#2a2a3e';
+    // Небо (фон)
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#16213e');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Пол
+    // Пол (трава/земля)
     ctx.fillStyle = '#3a3a4e';
-    ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+    ctx.fillRect(0, FLOOR_Y, canvas.width, canvas.height - FLOOR_Y);
+    
+    // Полоска травы сверху
+    ctx.fillStyle = '#2d5a27';
+    ctx.fillRect(0, FLOOR_Y, canvas.width, 10);
     
     // Рисуем всех пользователей
     for (const uid in users) {
         const user = users[uid];
-        drawPup(user.x, user.y, user.emotion, uid === currentUser?.uid);
+        drawPup(user.x, FLOOR_Y - PUP_RADIUS, uid === currentUser?.uid);
     }
 }
 
-// Отрисовка пупса
-function drawPup(x, y, emotion, isMe) {
-    // Тело
-    ctx.fillStyle = isMe ? '#ff006e' : '#3a86ff';
+// Отрисовка пупса (вид сбоку)
+function drawPup(x, y, isMe) {
+    // Тень под пупсом
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
-    ctx.arc(x, y, 30, 0, Math.PI * 2);
+    ctx.ellipse(x, FLOOR_Y + 5, 25, 8, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Эмоция
+    // Тело (круг)
+    ctx.fillStyle = isMe ? '#ff006e' : '#3a86ff';
+    ctx.beginPath();
+    ctx.arc(x, y, PUP_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Обводка
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // Эмоция (смайлик)
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(emotion, x, y + 10);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('😊', x, y);
     
-    // Имя
-    ctx.font = '14px Arial';
+    // Имя над головой
+    ctx.font = 'bold 16px Arial';
     ctx.fillStyle = 'white';
-    ctx.fillText(isMe ? 'Ты' : 'Пупс', x, y - 40);
+    ctx.fillText(isMe ? 'Ты' : 'Пупс', x, y - PUP_RADIUS - 20);
 }
 
-// Клик по комнате — движение
+// Клик по комнате — движение только влево-вправо
 canvas.addEventListener('click', async (e) => {
     if (!currentUser) return;
     
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    
+    // Ограничиваем движение в пределах комнаты
+    const minX = PUP_RADIUS + 10;
+    const maxX = canvas.width - PUP_RADIUS - 10;
+    const clampedX = Math.max(minX, Math.min(maxX, x));
     
     const userRef = doc(db, 'rooms', 'room1', 'users', currentUser.uid);
     await updateDoc(userRef, {
-        x: x,
-        y: y,
+        x: clampedX,
         lastUpdate: Date.now()
     });
 });
