@@ -52,5 +52,17 @@
     <script type="module" src="scripts/firebase-config.js"></script>
     <script type="module" src="scripts/room.js"></script>
     <script type="module" src="scripts/chat.js"></script>
+    <script>
+// При загрузке страницы проверяем сессию
+window.addEventListener('beforeunload', () => {
+    // Сохраняем состояние
+    sessionStorage.setItem('wasInRoom', 'true');
+});
+
+// Очищаем при выходе
+window.addEventListener('unload', () => {
+    sessionStorage.removeItem('wasInRoom');
+});
+</script>
 </body>
 </html>
