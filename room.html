@@ -13,28 +13,26 @@
             <div class="user-info">
                 <span id="userName">Пупс</span>
                 <span id="userCoins">💰 0</span>
-                <button id="logoutBtn" class="btn-small">Выйти</button>
+                <button id="logoutBtn" class="btn-logout">🚪 Выйти</button>
             </div>
         </header>
         
-        <div class="room-content">
-            <div class="room-canvas-wrapper">
-                <canvas id="roomCanvas" width="800" height="600"></canvas>
-            </div>
-            
-            <div class="chat-panel">
-                <div id="chatMessages" class="chat-messages"></div>
-                <form id="chatForm" class="chat-form">
-                    <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="200">
-                    <button type="submit" class="btn-small">➤</button>
-                </form>
-            </div>
+        <div class="chat-panel-top">
+            <div id="chatMessages" class="chat-messages"></div>
+            <form id="chatForm" class="chat-form">
+                <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="200" autocomplete="off">
+                <button type="submit" class="btn-send">➤</button>
+            </form>
+        </div>
+        
+        <div class="room-content-full">
+            <canvas id="roomCanvas"></canvas>
         </div>
         
         <div class="room-controls">
-            <button id="emotionBtn" class="btn">😊 Эмоции</button>
-            <button id="profileBtn" class="btn">👤 Профиль</button>
-            <button id="shopBtn" class="btn">🛍 Магазин</button>
+            <button id="emotionBtn" class="btn-control">😊 Эмоции</button>
+            <button id="profileBtn" class="btn-control">👤 Профиль</button>
+            <button id="shopBtn" class="btn-control">🛍 Магазин</button>
         </div>
     </div>
     
