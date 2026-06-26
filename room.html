@@ -7,35 +7,48 @@
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <div class="room-container">
-        <header class="room-header">
-            <h2>🐾 PupChat — Комната #1</h2>
-            <div class="user-info">
-                <span id="userName">Пупс</span>
-                <span id="userCoins">💰 0</span>
-                <button id="logoutBtn" class="btn-logout">🚪 Выйти</button>
+    <div class="room-wrapper">
+        <!-- Верхняя панель -->
+        <div class="top-bar">
+            <div class="top-left">
+                <h1>🐾 PupChat</h1>
+                <span class="room-name">— Комната #1</span>
             </div>
-        </header>
-        
-        <div class="chat-panel-top">
-            <div id="chatMessages" class="chat-messages"></div>
-            <form id="chatForm" class="chat-form">
-                <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="200" autocomplete="off">
-                <button type="submit" class="btn-send">➤</button>
-            </form>
+            <div class="top-right">
+                <span class="user-name" id="userName">Пупс</span>
+                <span class="user-coins" id="userCoins">💰 0</span>
+                <button id="logoutBtn" class="btn-exit">🚪 Выйти</button>
+            </div>
         </div>
-        
-        <div class="room-content-full">
-            <canvas id="roomCanvas"></canvas>
+
+        <!-- Основная область -->
+        <div class="main-area">
+            <!-- Левая часть: комната с пупсами -->
+            <div class="room-view">
+                <canvas id="roomCanvas"></canvas>
+            </div>
+
+            <!-- Правая часть: чат и инфо -->
+            <div class="side-panel">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <form id="chatForm" class="chat-input-form">
+                        <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="200" autocomplete="off">
+                        <button type="submit" class="btn-send">➤</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        
-        <div class="room-controls">
-            <button id="emotionBtn" class="btn-control">😊 Эмоции</button>
-            <button id="profileBtn" class="btn-control">👤 Профиль</button>
-            <button id="shopBtn" class="btn-control">🛍 Магазин</button>
+
+        <!-- Нижняя панель с кнопками -->
+        <div class="bottom-bar">
+            <button id="emotionBtn" class="nav-btn">😊 Эмоции</button>
+            <button id="profileBtn" class="nav-btn">👤 Профиль</button>
+            <button id="shopBtn" class="nav-btn">🛍 Магазин</button>
+            <button id="settingsBtn" class="nav-btn">⚙️ Настройки</button>
         </div>
     </div>
-    
+
     <script type="module" src="scripts/firebase-config.js"></script>
     <script type="module" src="scripts/room.js"></script>
     <script type="module" src="scripts/chat.js"></script>
