@@ -158,6 +158,43 @@ canvas.addEventListener('click', async (e) => {
     });
 });
 
+// Кнопка выхода
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            // 1. Удаляем пупса из комнаты
+            if (currentUser) {
+                const userRef = doc(db, 'rooms', 'room1', 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    x: -9999, // Убираем за пределы экрана
+                    lastUpdate: Date.now()
+                }).catch(() => {
+                    // Если не получилось обновить, пробуем удалить
+                    console.log('Не удалось обновить позицию, пробуем удалить');
+                });
+            }
+            
+            // 2. Выход из Firebase Auth
+            await auth.signOut();
+            
+            // 3. Очищаем всё
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 4. Принудительный редирект
+            window.location.href = 'index.html';
+            
+        } catch (error) {
+            console.error('Ошибка выхода:', error);
+            // Даже если ошибка - очищаем и уходим
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+    });
+}
+
 // Кнопки
 document.getElementById('profileBtn')?.addEventListener('click', () => {
     window.location.href = 'profile.html';
