@@ -2,31 +2,20 @@ import { auth, db } from './firebase-config.js';
 import { 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
-    onAuthStateChanged,
-    signOut 
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Глобальная проверка авторизации
-let authCheckInterval = null;
-
+// Проверка авторизации
 onAuthStateChanged(auth, (user) => {
-    console.log('Auth state changed:', user ? user.email : 'null');
-    
     if (user) {
-        // Пользователь авторизован
-        const protectedPages = ['login.html', 'register.html', 'index.html'];
-        const currentPage = window.location.pathname;
-        
-        if (protectedPages.some(page => currentPage.includes(page))) {
+        const path = window.location.pathname;
+        if (path.includes('login.html') || path.includes('register.html') || path === '/' || path.endsWith('index.html')) {
             window.location.href = 'room.html';
         }
     } else {
-        // Не авторизован
-        const protectedPages = ['room.html', 'profile.html'];
-        const currentPage = window.location.pathname;
-        
-        if (protectedPages.some(page => currentPage.includes(page))) {
+        const path = window.location.pathname;
+        if (path.includes('room.html') || path.includes('profile.html')) {
             window.location.href = 'login.html';
         }
     }
@@ -40,48 +29,45 @@ if (loginForm) {
         
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMessage');
         
-        // Блокируем кнопку
-        if (submitBtn) submitBtn.disabled = true;
+        // Показываем загрузку
+        loginBtn.disabled = true;
+        loginBtn.textContent = '⏳ Вход...';
+        errorDiv.classList.remove('show');
         
         try {
-            console.log('Попытка входа:', email);
+            console.log(' Попытка входа:', email);
             
-            // Очищаем перед входом
-            localStorage.clear();
+            await signInWithEmailAndPassword(auth, email, password);
             
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log('Успешный вход:', userCredential.user.email);
-            
-            // Сохраняем данные
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('userEmail', email);
-            
-            // Редирект
-            setTimeout(() => {
-                window.location.href = 'room.html';
-            }, 100);
+            console.log('✅ Успешный вход!');
+            window.location.href = 'room.html';
             
         } catch (error) {
-            console.error('Ошибка входа:', error.code, error.message);
+            console.error('❌ Ошибка входа:', error.code, error.message);
             
-            let message = 'Ошибка входа';
+            let message = '';
             if (error.code === 'auth/user-not-found') {
-                message = 'Пользователь не найден. Зарегистрируйтесь!';
+                message = '🔍 Пользователь не найден! Зарегистрируйтесь.';
             } else if (error.code === 'auth/wrong-password') {
-                message = 'Неверный пароль!';
+                message = '🔑 Неверный пароль! Попробуйте ещё раз.';
             } else if (error.code === 'auth/invalid-credential') {
-                message = 'Неверный email или пароль! Попробуйте зарегистрироваться заново.';
+                message = '❌ Неверный email или пароль! Проверьте данные или зарегистрируйтесь.';
             } else if (error.code === 'auth/too-many-requests') {
-                message = 'Слишком много попыток. Подождите немного.';
+                message = '⏳ Слишком много попыток. Подождите немного.';
             } else if (error.code === 'auth/invalid-email') {
-                message = 'Некорректный email!';
+                message = '📧 Некорректный email!';
+            } else {
+                message = '⚠️ Ошибка: ' + error.message;
             }
             
-            alert(message);
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
         } finally {
-            if (submitBtn) submitBtn.disabled = false;
+            loginBtn.disabled = false;
+            loginBtn.textContent = '🚀 Войти';
         }
     });
 }
@@ -96,23 +82,22 @@ if (registerForm) {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         
-        if (password.length < 6) {
-            alert('Пароль должен быть не менее 6 символов!');
+        if (!username) {
+            alert('⚠️ Введите никнейм!');
             return;
         }
         
-        if (!username) {
-            alert('Введите никнейм!');
+        if (password.length < 6) {
+            alert('⚠️ Пароль должен быть не менее 6 символов!');
             return;
         }
         
         try {
-            console.log('Регистрация:', email, username);
+            console.log('📝 Регистрация:', email, username);
             
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const uid = userCredential.user.uid;
             
-            // Создаём документ пользователя
             await setDoc(doc(db, 'users', uid), {
                 username: username,
                 email: email,
@@ -122,24 +107,19 @@ if (registerForm) {
                 lastLogin: Date.now()
             });
             
-            console.log('Пользователь создан:', uid);
-            
-            // Сохраняем
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('userEmail', email);
-            
+            console.log('✅ Регистрация успешна!');
             window.location.href = 'room.html';
             
         } catch (error) {
-            console.error('Ошибка регистрации:', error);
+            console.error('❌ Ошибка регистрации:', error);
             
-            let message = 'Ошибка регистрации';
+            let message = '⚠️ Ошибка регистрации';
             if (error.code === 'auth/email-already-in-use') {
-                message = 'Этот email уже зарегистрирован!';
+                message = '📧 Этот email уже зарегистрирован! Войдите вместо этого.';
             } else if (error.code === 'auth/weak-password') {
-                message = 'Пароль слишком слабый (минимум 6 символов)!';
+                message = '🔑 Пароль слишком слабый (минимум 6 символов)!';
             } else if (error.code === 'auth/invalid-email') {
-                message = 'Некорректный email!';
+                message = '📧 Некорректный email!';
             }
             
             alert(message);
@@ -147,7 +127,7 @@ if (registerForm) {
     });
 }
 
-// Кнопки на главной
+// Кнопки
 document.getElementById('loginBtn')?.addEventListener('click', () => {
     window.location.href = 'login.html';
 });
